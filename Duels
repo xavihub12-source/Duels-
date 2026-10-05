@@ -1,0 +1,549 @@
+-- ============================================================
+-- INTRO RIVAL HUB (se ejecuta primero; Rival Hub carga al terminar o al tocar SKIP)
+-- ============================================================
+do
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+local SoundService = game:GetService("SoundService")
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+
+local HOLD_TO_SKIP = 1
+local INTRO_DURATION = 6.35
+local SONG_URL = "https://files.catbox.moe/4inuat.mp3"
+local SONG_FILE = "M4LWARE_Intro_Song1.mp3"
+
+pcall(function()
+    local old = CoreGui:FindFirstChild("M4LWARE_Intro")
+    if old then old:Destroy() end
+end)
+
+pcall(function()
+    local pg = Players.LocalPlayer and Players.LocalPlayer:FindFirstChild("PlayerGui")
+    local old = pg and pg:FindFirstChild("M4LWARE_Intro")
+    if old then old:Destroy() end
+end)
+
+local intro = Instance.new("ScreenGui")
+intro.Name = "M4LWARE_Intro"
+intro.IgnoreGuiInset = true
+intro.ResetOnSpawn = false
+intro.DisplayOrder = 999999
+intro.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+if not pcall(function()
+    intro.Parent = CoreGui
+end) or not intro.Parent then
+    intro.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local bg = Instance.new("Frame")
+bg.Size = UDim2.fromScale(1,1)
+bg.BackgroundColor3 = Color3.fromRGB(0,0,0)
+bg.BorderSizePixel = 0
+bg.Parent = intro
+
+local bgGrad = Instance.new("UIGradient", bg)
+bgGrad.Rotation = 90
+bgGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(0,0,0)),
+    ColorSequenceKeypoint.new(0.48, Color3.fromRGB(2,7,12)),
+    ColorSequenceKeypoint.new(0.52, Color3.fromRGB(3,12,24)),
+    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0,0,0))
+})
+
+local center = Instance.new("Frame")
+center.AnchorPoint = Vector2.new(0.5,0.5)
+center.Position = UDim2.fromScale(0.5,0.5)
+center.Size = UDim2.new(0.88,0,0,240)
+center.BackgroundTransparency = 1
+center.Parent = intro
+
+local centerLimit = Instance.new("UISizeConstraint", center)
+centerLimit.MaxSize = Vector2.new(760,260)
+centerLimit.MinSize = Vector2.new(280,200)
+
+local topLine = Instance.new("Frame")
+topLine.AnchorPoint = Vector2.new(0.5,0.5)
+topLine.Position = UDim2.new(0.5,0,0.18,0)
+topLine.Size = UDim2.fromOffset(0,1)
+topLine.BackgroundColor3 = Color3.fromRGB(45,120,255)
+topLine.BackgroundTransparency = 0.18
+topLine.BorderSizePixel = 0
+topLine.Parent = center
+
+local topGrad = Instance.new("UIGradient", topLine)
+topGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0,Color3.fromRGB(0,0,0)),
+    ColorSequenceKeypoint.new(0.5,Color3.fromRGB(235,242,255)),
+    ColorSequenceKeypoint.new(1,Color3.fromRGB(0,0,0))
+})
+
+local function makeCenterText(name, text, sizeY, font, color, z)
+    local t = Instance.new("TextLabel")
+    t.Name = name
+    t.AnchorPoint = Vector2.new(0.5,0.5)
+    t.Position = UDim2.fromScale(0.5,0.49)
+    t.Size = UDim2.new(0.92,0,0,sizeY)
+    t.BackgroundTransparency = 1
+    t.Text = text
+    t.Font = font
+    t.TextScaled = true
+    t.TextColor3 = color
+    t.TextTransparency = 1
+    t.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+    t.TextStrokeTransparency = 1
+    t.ZIndex = z or 10
+    t.Parent = center
+    return t
+end
+
+local symbolGlow = makeCenterText("SymbolGlow", "Clean is good?", 88, Enum.Font.GothamBlack, Color3.fromRGB(35,105,255), 9)
+local symbolStroke = Instance.new("UIStroke", symbolGlow)
+symbolStroke.Color = Color3.fromRGB(20,82,210)
+symbolStroke.Thickness = 10
+symbolStroke.Transparency = 1
+
+local symbol = makeCenterText("Symbol", "Clean is good?", 82, Enum.Font.GothamBlack, Color3.fromRGB(245,248,255), 11)
+local symbolScale = Instance.new("UIScale", symbol)
+symbolScale.Scale = 0.72
+
+local noGlow = makeCenterText("NoGlow", "NO!", 102, Enum.Font.GothamBlack, Color3.fromRGB(25,92,235), 12)
+local noStroke = Instance.new("UIStroke", noGlow)
+noStroke.Color = Color3.fromRGB(20,80,205)
+noStroke.Thickness = 9
+noStroke.Transparency = 1
+
+local noText = makeCenterText("NoText", "NO!", 96, Enum.Font.GothamBlack, Color3.fromRGB(248,250,255), 13)
+noText.Rotation = -2
+
+local noScale = Instance.new("UIScale", noText)
+noScale.Scale = 1.22
+
+local sureGlow = makeCenterText("SureGlow", "RIVAL HUB", 90, Enum.Font.GothamBlack, Color3.fromRGB(35,105,255), 14)
+local sureStroke = Instance.new("UIStroke", sureGlow)
+sureStroke.Color = Color3.fromRGB(20,85,220)
+sureStroke.Thickness = 10
+sureStroke.Transparency = 1
+
+local sure = makeCenterText("Sure", "RIVAL HUB", 86, Enum.Font.GothamBlack, Color3.fromRGB(255,255,255), 16)
+sure.Position = UDim2.new(0.5,0,0.46,24)
+sureGlow.Position = UDim2.new(0.5,0,0.46,24)
+
+local sureGrad = Instance.new("UIGradient", sure)
+sureGrad.Rotation = 0
+sureGrad.Offset = Vector2.new(-0.72,0)
+sureGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(20,75,190)),
+    ColorSequenceKeypoint.new(0.28, Color3.fromRGB(155,190,255)),
+    ColorSequenceKeypoint.new(0.50, Color3.fromRGB(255,255,255)),
+    ColorSequenceKeypoint.new(0.72, Color3.fromRGB(150,185,255)),
+    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(15,65,175))
+})
+
+local sureScale = Instance.new("UIScale", sure)
+sureScale.Scale = 0.90
+
+local link = Instance.new("TextLabel")
+link.AnchorPoint = Vector2.new(0.5,0.5)
+link.Position = UDim2.new(0.5,0,0.71,18)
+link.Size = UDim2.new(0.72,0,0,28)
+link.BackgroundTransparency = 1
+link.Text = ".gg/rivalhub"
+link.Font = Enum.Font.GothamMedium
+link.TextScaled = true
+link.TextColor3 = Color3.fromRGB(175,205,255)
+link.TextTransparency = 1
+link.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+link.TextStrokeTransparency = 1
+link.ZIndex = 16
+link.Parent = center
+
+local under = Instance.new("Frame")
+under.AnchorPoint = Vector2.new(0.5,0.5)
+under.Position = UDim2.new(0.5,0,0.62,13)
+under.Size = UDim2.fromOffset(0,2)
+under.BackgroundColor3 = Color3.fromRGB(45,120,255)
+under.BackgroundTransparency = 0.10
+under.BorderSizePixel = 0
+under.ZIndex = 15
+under.Parent = center
+
+local underGrad = Instance.new("UIGradient", under)
+underGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0,Color3.fromRGB(0,7,18)),
+    ColorSequenceKeypoint.new(0.5,Color3.fromRGB(235,242,255)),
+    ColorSequenceKeypoint.new(1,Color3.fromRGB(0,7,18))
+})
+
+local glitchLeft = Instance.new("Frame")
+glitchLeft.AnchorPoint = Vector2.new(1,0.5)
+glitchLeft.Position = UDim2.new(0.5,-5,0.5,0)
+glitchLeft.Size = UDim2.fromOffset(0,2)
+glitchLeft.BackgroundColor3 = Color3.fromRGB(35,105,255)
+glitchLeft.BorderSizePixel = 0
+glitchLeft.BackgroundTransparency = 0.08
+glitchLeft.ZIndex = 7
+glitchLeft.Parent = intro
+
+local glitchRight = glitchLeft:Clone()
+glitchRight.AnchorPoint = Vector2.new(0,0.5)
+glitchRight.Position = UDim2.new(0.5,5,0.5,0)
+glitchRight.Parent = intro
+
+local glitchLayer = Instance.new("Frame")
+glitchLayer.Size = UDim2.fromScale(1,1)
+glitchLayer.BackgroundTransparency = 1
+glitchLayer.BorderSizePixel = 0
+glitchLayer.ZIndex = 8
+glitchLayer.Parent = intro
+
+local glitchColors = {
+    Color3.fromRGB(35,105,255),
+    Color3.fromRGB(255,255,255),
+    Color3.fromRGB(0,0,0)
+}
+
+task.spawn(function()
+    while glitchLayer.Parent do
+        task.wait(math.random(7,18)/100)
+        for _ = 1, math.random(1,4) do
+            local slice = Instance.new("Frame")
+            slice.BorderSizePixel = 0
+            slice.BackgroundColor3 = glitchColors[math.random(1,#glitchColors)]
+            slice.BackgroundTransparency = math.random(5,45)/100
+            slice.Size = UDim2.new(math.random(12,72)/100,0,0,math.random(1,4))
+            slice.Position = UDim2.new(math.random(0,88)/100,0,math.random(18,82)/100,0)
+            slice.ZIndex = 8
+            slice.Parent = glitchLayer
+            task.delay(math.random(3,10)/100,function()
+                if slice then slice:Destroy() end
+            end)
+        end
+    end
+end)
+
+local skipLabel = Instance.new("TextLabel")
+skipLabel.AnchorPoint = Vector2.new(0.5,1)
+skipLabel.Position = UDim2.new(0.5,0,0.965,0)
+skipLabel.Size = UDim2.fromOffset(270,24)
+skipLabel.BackgroundTransparency = 1
+skipLabel.Text = ""
+skipLabel.Font = Enum.Font.GothamMedium
+skipLabel.TextSize = 12
+skipLabel.TextColor3 = Color3.fromRGB(180,195,230)
+skipLabel.TextTransparency = 0.12
+skipLabel.Visible = false
+skipLabel.ZIndex = 50
+skipLabel.Parent = intro
+
+local overlay = Instance.new("Frame")
+overlay.Size = UDim2.fromScale(1,1)
+overlay.BackgroundColor3 = Color3.fromRGB(0,0,0)
+overlay.BackgroundTransparency = 1
+overlay.BorderSizePixel = 0
+overlay.ZIndex = 100
+overlay.Parent = intro
+
+local flash = Instance.new("Frame")
+flash.Size = UDim2.fromScale(1,1)
+flash.BackgroundColor3 = Color3.fromRGB(45,120,255)
+flash.BackgroundTransparency = 1
+flash.BorderSizePixel = 0
+flash.ZIndex = 40
+flash.Parent = intro
+
+local sound = Instance.new("Sound")
+sound.Name = "M4LWAREIntroMusic"
+sound.Volume = 0.68
+sound.Looped = false
+sound.Parent = SoundService
+
+task.spawn(function()
+    pcall(function()
+        local asset = getcustomasset or getsynasset
+        if type(asset) ~= "function" or type(writefile) ~= "function" then return end
+        local exists = false
+        if type(isfile) == "function" then
+            local ok, value = pcall(isfile, SONG_FILE)
+            exists = ok and value == true
+        end
+        if not exists then
+            local ok, body = pcall(function()
+                return game:HttpGet(SONG_URL)
+            end)
+            if not ok or type(body) ~= "string" or #body == 0 then return end
+            if not pcall(writefile, SONG_FILE, body) then return end
+        end
+        local ok, id = pcall(asset, SONG_FILE)
+        if ok and id and sound.Parent then
+            sound.SoundId = id
+            sound:Play()
+        end
+    end)
+end)
+
+local finished = false
+local introDone = false
+local heldInput = nil
+local holdStarted = nil
+local holdGeneration = 0
+local connections = {}
+local startTime = os.clock()
+
+local function cleanup()
+    for _, c in ipairs(connections) do
+        pcall(function()
+            c:Disconnect()
+        end)
+    end
+    pcall(function()
+        sound:Stop()
+        sound:Destroy()
+    end)
+    pcall(function()
+        intro:Destroy()
+    end)
+    introDone = true
+end
+
+local function finishIntro(fast)
+    if finished then return end
+    finished = true
+    holdGeneration += 1
+    local d = fast and 0.14 or 0.34
+    pcall(function()
+        TweenService:Create(
+            overlay,
+            TweenInfo.new(d,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),
+            {BackgroundTransparency = 0}
+        ):Play()
+    end)
+    pcall(function()
+        TweenService:Create(
+            sound,
+            TweenInfo.new(d,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),
+            {Volume = 0}
+        ):Play()
+    end)
+    task.delay(d + 0.04, cleanup)
+end
+
+local skipButton = Instance.new("TextButton")
+skipButton.Name = "SkipButton"
+skipButton.AnchorPoint = Vector2.new(1,0)
+skipButton.Position = UDim2.new(1,-16,0,18)
+skipButton.Size = UDim2.fromOffset(88,38)
+skipButton.BackgroundColor3 = Color3.fromRGB(4,10,18)
+skipButton.BackgroundTransparency = 0.15
+skipButton.BorderSizePixel = 0
+skipButton.AutoButtonColor = false
+skipButton.Text = "SKIP"
+skipButton.Font = Enum.Font.GothamBold
+skipButton.TextSize = 14
+skipButton.TextColor3 = Color3.fromRGB(235,242,255)
+skipButton.ZIndex = 60
+skipButton.Parent = intro
+Instance.new("UICorner", skipButton).CornerRadius = UDim.new(0,8)
+
+local skipStroke = Instance.new("UIStroke", skipButton)
+skipStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+skipStroke.Color = Color3.fromRGB(45,120,255)
+skipStroke.Thickness = 1.5
+skipStroke.Transparency = 0.2
+
+table.insert(connections, skipButton.Activated:Connect(function()
+    finishIntro(true)
+end))
+
+table.insert(connections, UserInputService.InputBegan:Connect(function(input)
+    if finished then return end
+    local kind = input.UserInputType
+    if kind ~= Enum.UserInputType.Touch and kind ~= Enum.UserInputType.MouseButton1 then return end
+    heldInput = input
+    holdStarted = os.clock()
+    holdGeneration += 1
+    local gen = holdGeneration
+    task.delay(HOLD_TO_SKIP,function()
+        if finished or heldInput ~= input or gen ~= holdGeneration then return end
+        finishIntro(true)
+    end)
+end))
+
+table.insert(connections, UserInputService.InputEnded:Connect(function(input)
+    if heldInput == input then
+        heldInput = nil
+        holdStarted = nil
+        holdGeneration += 1
+        skipLabel.Visible = false
+        skipLabel.Text = ""
+    end
+end))
+
+table.insert(connections, game:GetService("RunService").RenderStepped:Connect(function()
+    if finished then return end
+    if heldInput and holdStarted then
+        local left = math.max(0,HOLD_TO_SKIP-(os.clock()-holdStarted))
+        skipLabel.Visible = true
+        skipLabel.Text = string.format("HOLD TO SKIP  %.1fs",left)
+    else
+        skipLabel.Visible = false
+    end
+end))
+
+task.spawn(function()
+    TweenService:Create(topLine,TweenInfo.new(0.42,Enum.EasingStyle.Quart,Enum.EasingDirection.Out),{Size=UDim2.new(0.46,0,0,1)}):Play()
+    TweenService:Create(glitchLeft,TweenInfo.new(0.38,Enum.EasingStyle.Quart,Enum.EasingDirection.Out),{Size=UDim2.new(0.31,0,0,2)}):Play()
+    TweenService:Create(glitchRight,TweenInfo.new(0.38,Enum.EasingStyle.Quart,Enum.EasingDirection.Out),{Size=UDim2.new(0.31,0,0,2)}):Play()
+
+    task.wait(0.34)
+    if finished then return end
+
+    TweenService:Create(symbolGlow,TweenInfo.new(0.18),{TextTransparency=0.45}):Play()
+    TweenService:Create(symbolStroke,TweenInfo.new(0.18),{Transparency=0.76}):Play()
+    TweenService:Create(symbol,TweenInfo.new(0.32,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{TextTransparency=0,TextStrokeTransparency=0.38}):Play()
+    TweenService:Create(symbolScale,TweenInfo.new(0.34,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Scale=1}):Play()
+
+    task.wait(0.28)
+    if finished then return end
+
+    symbol.Position = UDim2.new(0.5,-5,0.49,0)
+    task.wait(0.045)
+    symbol.Position = UDim2.new(0.5,6,0.49,0)
+    task.wait(0.045)
+    symbol.Position = UDim2.fromScale(0.5,0.49)
+
+    task.wait(0.68)
+    if finished then return end
+
+    TweenService:Create(symbolGlow,TweenInfo.new(0.16),{TextTransparency=1}):Play()
+    TweenService:Create(symbolStroke,TweenInfo.new(0.16),{Transparency=1}):Play()
+    TweenService:Create(symbol,TweenInfo.new(0.16,Enum.EasingStyle.Quad,Enum.EasingDirection.In),{TextTransparency=1,TextStrokeTransparency=1}):Play()
+
+    task.wait(0.12)
+    if finished then return end
+
+    noText.Position = UDim2.new(0.5,0,0.49,-8)
+    noGlow.Position = noText.Position
+
+    TweenService:Create(noGlow,TweenInfo.new(0.15),{TextTransparency=0.48}):Play()
+    TweenService:Create(noStroke,TweenInfo.new(0.15),{Transparency=0.78}):Play()
+    TweenService:Create(noText,TweenInfo.new(0.20,Enum.EasingStyle.Quart,Enum.EasingDirection.Out),{TextTransparency=0,TextStrokeTransparency=0.38}):Play()
+    TweenService:Create(noScale,TweenInfo.new(0.20,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Scale=1}):Play()
+    TweenService:Create(flash,TweenInfo.new(0.07),{BackgroundTransparency=0.94}):Play()
+
+    task.wait(0.07)
+    TweenService:Create(flash,TweenInfo.new(0.20),{BackgroundTransparency=1}):Play()
+
+    task.wait(0.72)
+    if finished then return end
+
+    TweenService:Create(noGlow,TweenInfo.new(0.15),{TextTransparency=1}):Play()
+    TweenService:Create(noStroke,TweenInfo.new(0.15),{Transparency=1}):Play()
+    TweenService:Create(noText,TweenInfo.new(0.16),{TextTransparency=1,TextStrokeTransparency=1}):Play()
+
+    task.wait(0.18)
+    if finished then return end
+
+    sure.Position = UDim2.new(0.5,0,0.46,34)
+    sureGlow.Position = sure.Position
+
+    TweenService:Create(sureGlow,TweenInfo.new(0.42,Enum.EasingStyle.Quart,Enum.EasingDirection.Out),{TextTransparency=0.54,Position=UDim2.new(0.5,0,0.46,3)}):Play()
+    TweenService:Create(sureStroke,TweenInfo.new(0.42),{Transparency=0.80}):Play()
+    TweenService:Create(sure,TweenInfo.new(0.46,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{TextTransparency=0,TextStrokeTransparency=0.38,Position=UDim2.new(0.5,0,0.46,0)}):Play()
+    TweenService:Create(sureScale,TweenInfo.new(0.46,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Scale=1}):Play()
+    TweenService:Create(under,TweenInfo.new(0.52,Enum.EasingStyle.Quart,Enum.EasingDirection.Out),{Size=UDim2.new(0.54,0,0,2)}):Play()
+
+    task.wait(0.18)
+    if finished then return end
+
+    TweenService:Create(link,TweenInfo.new(0.38,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{TextTransparency=0.04,TextStrokeTransparency=0.55,Position=UDim2.new(0.5,0,0.71,0)}):Play()
+    TweenService:Create(sureGrad,TweenInfo.new(1.1,Enum.EasingStyle.Quart,Enum.EasingDirection.Out),{Offset=Vector2.new(0.72,0)}):Play()
+
+    task.wait(0.26)
+    if finished then return end
+
+    sure.Position = UDim2.new(0.5,-3,0.46,0)
+    sureGlow.Position = UDim2.new(0.5,4,0.46,0)
+
+    task.wait(0.035)
+
+    sure.Position = UDim2.new(0.5,3,0.46,0)
+    sureGlow.Position = UDim2.new(0.5,-4,0.46,0)
+
+    task.wait(0.035)
+
+    sure.Position = UDim2.new(0.5,0,0.46,0)
+    sureGlow.Position = UDim2.new(0.5,0,0.46,0)
+
+    local remaining = math.max(0.65,INTRO_DURATION-(os.clock()-startTime)-0.38)
+    task.wait(remaining)
+
+    if not finished then
+        finishIntro(false)
+    end
+end)
+
+task.spawn(function()
+    while not finished and os.clock()-startTime < INTRO_DURATION+0.8 do
+        task.wait(0.1)
+    end
+    if not finished then
+        finishIntro(false)
+    end
+end)
+
+local waitStart = os.clock()
+while not introDone and os.clock() - waitStart < INTRO_DURATION + 3 do
+    task.wait(0.05)
+end
+end
+-- ============================================================
+-- FIN INTRO
+-- ============================================================
+
+if _G.RivalHubRunning then
+    warn("[Rival Hub] Instancia previa detectada. Se recomienda rejoin si hay comportamiento errÃ¡tico.")
+end
+_G.RivalHubRunning = false
+_G.__RivalHubMainOriginalPos = nil
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local TS = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
+local HS = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local LP = Players.LocalPlayer
+if not LP then
+    local _lpConn
+    _lpConn = Players.PlayerAdded:Connect(function(p) LP = p end)
+    local _t0 = tick()
+    while not LP and tick() - _t0 < 15 do task.wait(0.1) end
+    if _lpConn then _lpConn:Disconnect() end
+end
+if not LP then
+    warn("[Rival Hub] LocalPlayer no disponible en 15s. Abortando.")
+    return
+end
+
+local pgui = LP:WaitForChild("PlayerGui", 20)
+if not pgui then
+    warn("[Rival Hub] PlayerGui no cargÃ³ en 20s. Abortando.")
+    return
+end
+
+local camera = Workspace.CurrentCamera
+
+_G.RivalHubRunning = true
+_G.RivalHubSession = (_G.RivalHubSession or 0) + 1
+local _mySession = _G.RivalHubSession
+
+local RIVALHUB_LANGUAGE = "en"
+
+local RIVALHUB_TRANSLATIONS = {
+    es = { ["RESET ALL SETTINGS"]="RESTABLECER TODO", ["SETTINGS RESET"]="AJUSTES RESTABLECIDOS", ["CONFIRM?"]="Â¿CONFIRMAR?", ["ERROR"]="ERROR", ["RESET"]="RESTABLECER", ["Keybinds"]="TECLAS", ["Carry Mode"]="MODO CARGAR", ["Lagger Mode"]="MODO LAG", ["Auto Left"]="AUTO IZQUIERDA", ["Auto Right"]="AUTO DERECHA", ["Auto Bat"]="AUTO BATE", ["TP Down"]="TP ABAJO", ["Drop Brainrot"]="SOLTAR BRAINROT", ["Hide GUI"]="OCULTAR MENÃš", ["Normal Speed"]="VELOCIDAD NORMAL", ["Carry Speed"]="VELOCIDAD CARGAR", ["Current Mode"]="MODO ACTUAL", ["ACTIVATE"]="ACTIVAR" },
+    pt = { ["RESET ALL SETTINGS"]="REDEFINIR TUDO", ["SETTINGS RESET"]="CONFIGURAÃ‡Ã•ES REDEFINIDAS", ["CONFIRM?"]="CONFIRMAR?", ["ERROR"]="ERRO", ["RESET"]="REDEFINIR", ["Keybinds"]="TECLAS", ["Carry Mode"]="MODO CARREGAR", ["Auto Left"]="AUTO ESQUERDA", ["Auto Right"]="AUTO DIREITA", ["Hide GUI"]="OCULTAR MENU", ["Normal Speed"]="VELOCIDADE NORMAL", ["Carry Speed"]="VELOCIDADE CARREGAR", ["ACTIVATE"]="A
